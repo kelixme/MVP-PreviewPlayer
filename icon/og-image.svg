@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c5cff"/>
+      <stop offset="100%" stop-color="#ff5caa"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#07070c"/>
+  <rect x="0" y="0" width="1200" height="630" fill="url(#g)" opacity="0.9"/>
+  <text x="600" y="315" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="bold" fill="#ffffff" text-anchor="middle" dominant-baseline="central">MVP Просмотр</text>
+  <text x="600" y="395" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="normal" fill="#ffffff" opacity="0.85" text-anchor="middle">Kenso / FixKD / RE:HVH</text>
+</svg>
