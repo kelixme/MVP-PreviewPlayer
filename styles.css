@@ -1,0 +1,829 @@
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@200..900&display=swap');
+
+/* Регистрируем цветовые переменные как <color>, чтобы они плавно интерполировались */
+@property --accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #7c5cff;
+}
+
+@property --accent2 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #ff5caa;
+}
+
+@property --art-a {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #7c5cff;
+}
+
+@property --art-b {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #ff5caa;
+}
+
+@property --glow-a {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #7c5cff;
+}
+
+@property --glow-b {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #ff5caa;
+}
+
+@property --thumb-color {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #b7a4ff;
+}
+
+:root {
+  --bg0: #020207;
+  --bg1: #06060c;
+  --panel: rgba(255, 255, 255, 0.035);
+  --panel-2: rgba(255, 255, 255, 0.06);
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #f2f2f6;
+  --muted: #9b9ba8;
+  --accent: #7c5cff;
+  --accent2: #ff5caa;
+  --bar-w: 60%;
+  --bar-pos: 0px;
+  --thumb-color: #b7a4ff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Убираем нативную обводку при фокусе/активности полностью */
+button:focus, a:focus, input:focus, .track:focus,
+button:focus-visible, a:focus-visible, input:focus-visible, .track:focus-visible,
+button:active, a:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: "Unbounded", "Inter", "Segoe UI", -apple-system, "SF Pro Display", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  background:
+    radial-gradient(1200px 800px at 50% -10%, rgba(124, 92, 255, 0.11), transparent 60%),
+    radial-gradient(900px 600px at 85% 110%, rgba(255, 92, 170, 0.08), transparent 55%),
+    radial-gradient(700px 500px at 10% 100%, rgba(60, 180, 255, 0.07), transparent 60%),
+    var(--bg0);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* затемняющая вуаль поверх фона (над .bg-glow, под контентом) — равномерное затемнение всего фона */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg,
+      rgba(0,0,0,0.7), rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.75));
+}
+
+.bg-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  /* фон — плавный диагональный переход от цвета A (0%) к цвету B (100%) */
+  background: linear-gradient(135deg,
+      color-mix(in srgb, var(--glow-a, #5c3bff) 45%, rgba(0,0,0,0.6)) 0%,
+      color-mix(in srgb, var(--glow-b, #ff5caa) 20%, rgba(0,0,0,0.8)) 100%);
+  mix-blend-mode: screen;
+}
+
+/* ---------- Шапка над плеером ---------- */
+.app-header {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 14px 20px;
+  text-align: center;
+  background-color: #000000;
+  border-bottom: 1px solid var(--border);
+}
+
+.app-header__text {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  background-image: linear-gradient(90deg, #ff3b3b, #ff6b6b, #c81e1e, #ff3b3b);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: text-shimmer 5s linear infinite;
+}
+
+/* ---------- Player (top) ---------- */
+.player {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 22px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10, 10, 18, 0.55);
+}
+
+.player__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.player__row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+}
+
+.player__art {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  flex: 0 0 auto;
+  border-radius: 6px;
+  overflow: visible;
+  cursor: pointer;
+  background:
+    radial-gradient(circle at 30% 30%, var(--art-a, #7c5cff), transparent 70%),
+    radial-gradient(circle at 75% 70%, var(--art-b, #ff5caa), transparent 70%);
+  box-shadow: 0 18px 44px -14px var(--art-a, #7c5cff);
+  display: grid;
+  place-items: center;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.player__art.playing .art-blob {
+  animation-duration: 3.4s;
+}
+
+.art-blob {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background:
+    conic-gradient(from 0deg,
+      var(--art-a, #7c5cff), var(--art-b, #ff5caa),
+      #ffb35c, var(--art-a, #7c5cff));
+  opacity: 0.85;
+  animation: pulseOpacity 3.4s ease-in-out infinite;
+  will-change: opacity;
+}
+
+.art-icon {
+  position: relative;
+  z-index: 3;
+  width: 44px;
+  height: 44px;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.55));
+  object-fit: contain;
+  transition: opacity 0.3s ease;
+}
+
+.player__info {
+  min-width: 0;
+}
+
+.player__track-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: linear-gradient(90deg,
+      var(--accent, #7c5cff),
+      var(--accent2, #ff5caa),
+      var(--accent, #7c5cff));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: text-shimmer 3.5s linear infinite;
+}
+
+.player__title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Кликабельные иконки площадок */
+.platforms {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.platforms__link {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  opacity: 0.85;
+  transition: transform 0.18s ease, opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.platforms__link:hover {
+  opacity: 1;
+  transform: scale(1.12);
+  border-color: var(--accent);
+  background: var(--panel-2);
+}
+
+.platforms__link:active {
+  transform: scale(0.94);
+}
+
+.platforms__link img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  border-radius: 2px;
+}
+
+.player__sub {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.player__controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.ctl {
+  width: 44px;
+  height: 44px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform 0.18s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.ico {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  display: block;
+  pointer-events: none;
+}
+
+.ctl:hover {
+  background: var(--panel-2);
+  border-color: rgba(255,255,255,0.18);
+  transform: scale(1.06);
+}
+
+.ctl:active {
+  transform: scale(0.94);
+}
+
+.ctl--play {
+  background: linear-gradient(135deg, var(--accent), var(--accent2, #ff5caa));
+  border: none;
+  box-shadow: 0 10px 28px -10px var(--accent);
+}
+
+.ctl--play .ico {
+  width: 20px;
+  height: 20px;
+}
+
+.ctl--play:hover {
+  filter: brightness(1.1);
+}
+
+.progress {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px 1fr 42px;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress__time {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  text-align: center;
+}
+
+.progress__bar {
+  position: relative;
+  height: 6px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.10);
+  cursor: pointer;
+  touch-action: none;
+}
+
+.progress__fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--bar-w);
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2, #ff5caa));
+  box-shadow: 0 0 12px var(--accent);
+  will-change: width;
+}
+
+.progress__thumb {
+  position: absolute;
+  top: 50%;
+  left: var(--bar-w);
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  margin-top: -7px;
+  border-radius: 5px;
+  background: var(--thumb-color);
+  box-shadow: 0 0 12px var(--accent);
+  transform: scale(0);
+  transition: transform 0.18s ease;
+  pointer-events: none;
+}
+
+.progress__bar:hover .progress__thumb,
+.progress__bar.dragging .progress__thumb {
+  transform: scale(1);
+}
+
+/* ---------- List ---------- */
+.list-wrap {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 20px 10px;
+}
+
+.list-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 8px 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.list-head__count {
+  font-weight: 500;
+  font-size: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 2px 10px;
+  border-radius: 5px;
+}
+
+.search {
+  margin-left: auto;
+  width: 240px;
+  padding: 9px 14px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease, width 0.3s ease;
+}
+
+.search::placeholder {
+  color: var(--muted);
+}
+
+.search:focus {
+  border-color: var(--accent);
+  background: var(--panel-2);
+  width: 280px;
+}
+
+.list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 4px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.16) transparent;
+}
+
+/* Шапка столбцов */
+.columns {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 18px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 2;
+}
+
+.columns__pad {
+  flex: 0 0 auto;
+  width: 14px;
+}
+
+.columns__num {
+  flex: 0 0 auto;
+  width: 26px;
+  text-align: right;
+}
+
+.columns__title {
+  flex: 1;
+  min-width: 0;
+}
+
+.columns__platforms {
+  flex: 0 0 auto;
+  text-align: left;
+}
+
+.columns__date {
+  flex: 0 0 auto;
+  width: 84px;
+  text-align: right;
+}
+
+.list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.16);
+  border-radius: 99px;
+}
+
+.track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 4px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease;
+}
+
+.track.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.track:hover {
+  background: var(--panel);
+}
+
+/* подсветка активного трека — 2 цвета с прозрачностью 0.3: верх акцентный, низ темнее того же тона */
+.track::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+background: linear-gradient(180deg,
+      color-mix(in srgb, var(--accent) 30%, transparent),
+      color-mix(in srgb, var(--accent) 20%, rgba(0, 0, 0, 0.3)));
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.track.active {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.track.active::before {
+  opacity: 1;
+}
+
+.track.active {
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 22%, transparent),
+              0 0 32px -4px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+/* контент поверх размытия */
+.track__bar,
+.track__num,
+.track__title,
+.track__date {
+  position: relative;
+  z-index: 1;
+}
+
+.track__bar {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 20px;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.track__bar span {
+  width: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+  height: 100%;
+  transform-origin: bottom;
+  transform: scaleY(0.12);
+  transition: transform 0.2s ease;
+}
+
+.track.active.playing .track__bar span {
+  animation: eq 0.9s ease-in-out infinite;
+}
+
+.track.active.playing .track__bar span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.track.active.playing .track__bar span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.track__num {
+  width: 26px;
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.track.active .track__num {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.track__title {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track.active .track__title {
+  color: var(--accent);
+}
+
+/* подсветка найденного текста в поиске */
+mark.hl {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+  color: var(--text);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.track__date {
+  flex: 0 0 auto;
+  min-width: 84px;
+  width: 84px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  white-space: nowrap;
+  text-align: right;
+  opacity: 0.85;
+}
+
+/* иконки площадок в строке списка — всегда видны */
+.track__platforms {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.track__platforms .platforms__link {
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  opacity: 0.8;
+  transition: opacity 0.18s ease, transform 0.18s ease, border-color 0.2s ease;
+}
+
+.track__platforms .platforms__link:hover {
+  opacity: 1;
+  transform: scale(1.15);
+  border-color: var(--accent);
+}
+
+/* ---------- Animations ---------- */
+/* лёгкая пульсация обложки (только opacity — дёшево для GPU) */
+@keyframes pulseOpacity {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+
+@keyframes eq {
+  0%, 100% { transform: scaleY(0.12); }
+  50% { transform: scaleY(1); }
+}
+
+@keyframes pulseIcon {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.12); opacity: 0.85; }
+}
+
+/* перелив градиента заголовка трека */
+@keyframes text-shimmer {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.player__art.playing .art-icon {
+  animation: pulseIcon 1.6s ease-in-out infinite;
+}
+
+/* ---------- Адаптивность (планшеты) ---------- */
+@media (min-width: 641px) and (max-width: 900px) {
+  .player {
+    gap: 16px;
+    padding: 18px 20px;
+  }
+  .player__art {
+    width: 96px;
+    height: 96px;
+  }
+  .player__track-title {
+    font-size: 18px;
+  }
+}
+
+/* ---------- Адаптивность (мобильные) ---------- */
+@media (max-width: 640px) {
+  .player {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
+    padding: 18px 14px;
+  }
+
+  .player__body {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .player__info {
+    text-align: center;
+  }
+
+  .player__track-title {
+    font-size: 17px;
+  }
+
+  .player__row {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .player__controls {
+    gap: 12px;
+  }
+
+  .ctl {
+    width: 48px;
+    height: 48px;
+  }
+
+  .progress {
+    width: 100%;
+    grid-template-columns: 36px 1fr 36px;
+  }
+
+  .platforms--player {
+    justify-content: center;
+  }
+  .platforms--player .platforms__link {
+    width: 30px;
+    height: 30px;
+  }
+
+  /* список */
+  .list-wrap {
+    padding: 12px 10px 8px;
+  }
+
+  .search {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .search:focus {
+    width: 100%;
+  }
+
+  .list-head {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .columns__date {
+    width: 72px;
+  }
+
+  .track__platforms .platforms__link {
+    width: 22px;
+    height: 22px;
+  }
+
+  .track__date {
+    min-width: 68px;
+    width: 68px;
+    font-size: 11px;
+  }
+
+  .track__title {
+    font-size: 13px;
+  }
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .art-blob { animation: none !important; }
+  .bg-glow { animation: none !important; }
+  .track__bar span { animation: none !important; }
+  .player__track-title { animation: none !important; }
+}
